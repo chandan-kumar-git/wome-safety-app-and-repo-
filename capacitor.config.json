@@ -1,5 +1,23 @@
 {
   "appId": "com.suraksha.alert",
   "appName": "Suraksha Alert",
-  "webDir": "www"
+  "webDir": "www",
+  "backgroundColor": "#FFFDFB",
+  "android": {
+    "backgroundColor": "#FFFDFB"
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "initialViewportFitValueHint": "cover",
+      "style": "LIGHT"
+    },
+    "SplashScreen": {
+      "launchAutoHide": false,
+      "launchShowDuration": 3000,
+      "backgroundColor": "#FFFDFB",
+      "showSpinner": false,
+      "androidScaleType": "CENTER_CROP"
+    }
+  }
 }
