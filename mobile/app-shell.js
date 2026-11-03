@@ -11,7 +11,7 @@
   var Plugins = (Cap && Cap.Plugins) || {};
   var isNative = !!(Cap && Cap.isNativePlatform && Cap.isNativePlatform());
 
-  var APP_VERSION = '1.1.0';
+  var APP_VERSION = '1.2.0';
   var HOME = 'dashboard';
   var TAB_PAGES = ['dashboard', 'journey', 'contacts'];
 
@@ -117,8 +117,8 @@
   var sheet = el(
     '<div class="as-sheet" id="asSheet" role="dialog" aria-label="More">' +
       '<div class="as-handle"></div>' +
-      '<div class="as-sheet-profile"><div class="as-avatar" id="asAvatar">AS</div>' +
-        '<div><strong id="asUserName">Aanya Sen</strong><span id="asUserMeta">Protected • Demo mode</span></div></div>' +
+      '<div class="as-sheet-profile"><div class="as-avatar" id="asAvatar"></div>' +
+        '<div><strong id="asUserName"></strong><span id="asUserMeta">Protected • Demo mode</span></div></div>' +
       '<div class="as-sheet-label">Safety tools</div>' +
       '<div class="as-grid">' +
         gridItem('readiness', 'Readiness Score', I.gauge, '') +

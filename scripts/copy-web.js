@@ -1,5 +1,6 @@
 // Builds www/ for the Android app.
-// 1) Copies the original static web app (index.html, css/, js/) unchanged.
+// 1) Copies the original static web app (index.html, manifest, assets/, css/, js/) unchanged.
+//    sw.js is left out: the APK serves files locally, and a cache-first worker would keep stale files after updates.
 // 2) Adds the Android app shell (mobile/) and links it into the COPY of index.html only.
 const fs = require('fs');
 const path = require('path');
@@ -7,7 +8,7 @@ const root = path.join(__dirname, '..');
 const out = path.join(root, 'www');
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
-for (const item of ['index.html', 'css', 'js', 'mobile']) {
+for (const item of ['index.html', 'manifest.json', 'assets', 'css', 'js', 'mobile']) {
   fs.cpSync(path.join(root, item), path.join(out, item), { recursive: true });
 }
 

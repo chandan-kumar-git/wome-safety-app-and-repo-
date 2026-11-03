@@ -476,3 +476,32 @@ body.as-app .contact-priority-badge {
   position: static;
   align-self: flex-start;
 }
+
+/* Escalation ladder: stack vertically on phones so names + numbers never overlap */
+@media (max-width: 640px) {
+  body.as-app .escalation-flow-track {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.1rem;
+    padding: 0 0.25rem 0 0.5rem;
+    margin: 1.5rem 0 2rem;
+  }
+  body.as-app .escalation-flow-track::before {
+    top: 26px; bottom: 26px; left: calc(0.5rem + 25px); right: auto;
+    width: 3px; height: auto; transform: none;
+  }
+  body.as-app .escalation-flow-track .track-progress { display: none; }
+  body.as-app .escalation-node {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    column-gap: 0.9rem;
+    row-gap: 0.1rem;
+    align-items: center;
+    text-align: left;
+  }
+  body.as-app .escalation-node .node-circle { grid-row: span 2; }
+  body.as-app .escalation-node .node-title { align-self: end; }
+  body.as-app .escalation-node .node-subtitle { align-self: start; }
+  body.as-app .escalation-node .node-title,
+  body.as-app .escalation-node .node-subtitle { text-align: left; white-space: normal; }
+}
