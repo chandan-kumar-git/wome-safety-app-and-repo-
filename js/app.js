@@ -35,7 +35,7 @@ const JUDGE_TOUR_STEPS = [
     step: 4,
     page: "contacts",
     title: "4. Tiered Trusted Contacts",
-    desc: "Trusted Contacts: Establishes an ordered priority ladder (Priority 1, 2, 3) ensuring emergency messages follow an organized response chain."
+    desc: "Trusted Contacts: Nakul (Priority 1: 9899828825) & Anshu (Priority 2: 8287878272) with direct Call, SMS, and WhatsApp emergency channels."
   },
   {
     step: 5,
@@ -53,7 +53,7 @@ const JUDGE_TOUR_STEPS = [
     step: 7,
     page: "escalation",
     title: "7. Acknowledgement Escalation Flow",
-    desc: "Escalation Ladder: Contact 1 is alerted first. If unacknowledged, the alert automatically escalates to Contact 2 and 3."
+    desc: "Escalation Ladder: Nakul is alerted first. If unacknowledged within 15s, alert cascades to Anshu, and finally to Emergency 112."
   },
   {
     step: 8,
@@ -453,7 +453,7 @@ function simulateMissedCheckin() {
   window.appState.saveState();
 
   navigate('escalation');
-  triggerEscalationStep(1);
+  triggerEscalationStep(1, true);
 }
 
 function handleJourneyExpired() {
@@ -467,13 +467,14 @@ startJourneyCountdown();
 /* ==========================================================================
    SMART EMERGENCY ESCALATION WORKFLOW
    ========================================================================== */
-function triggerEscalationStep(stepNumber) {
+function triggerEscalationStep(stepNumber, autoLaunch = false) {
   window.appState.state.escalation.active = true;
   window.appState.state.escalation.stage = stepNumber;
   window.appState.state.escalation.status = 'waiting_ack';
 
-  const { contacts, system } = window.appState.state;
+  const { contacts, system, user } = window.appState.state;
   const targetContact = contacts[stepNumber - 1] || { name: "National Helpline 112", phone: "112", relation: "Police Central Dispatch" };
+  const cleanPhone = targetContact.phone.replace(/[^0-9+]/g, '');
 
   const smsRecipient = document.getElementById('smsRecipientTitle');
   const smsBody = document.getElementById('smsBodyPreview');
@@ -485,23 +486,75 @@ function triggerEscalationStep(stepNumber) {
   if (smsTime) {
     smsTime.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
+
+  const alertMessage = `EMERGENCY ALERT: Kumkum (Phone: ${user ? user.phone : '+91 99586 50203'}) needs help!
+Location: https://maps.google.com/?q=${system.currentLocation.lat},${system.currentLocation.lng} (${system.currentLocation.address})
+Accuracy: ${system.currentLocation.accuracy} | Battery: 84%
+Please acknowledge or reach out immediately!`;
+
   if (smsBody) {
     smsBody.textContent = `[SURAKSHA ALERT: EMERGENCY DISTRESS]
-Aanya Sen has activated an emergency alert or missed her safety check-in!
+Sender: Kumkum (${user ? user.phone : '+91 99586 50203'}) • Sector 15, Faridabad
+Recipient: ${targetContact.name} (${targetContact.phone})
 • Coordinates: ${system.currentLocation.lat}° N, ${system.currentLocation.lng}° E (${system.currentLocation.address})
 • Accuracy: ${system.currentLocation.accuracy}
-• Battery: ${system.system ? system.system.batteryLevel : 84}%
-• Live Tracking URL: https://suraksha.alert/live-track?id=demo-token
-Please ACKNOWLEDGE immediately in the Suraksha Portal. If unacknowledged within 30s, alert will cascade to the next priority contact.`;
+• Battery: 84%
+• Live Google Maps: https://maps.google.com/?q=${system.currentLocation.lat},${system.currentLocation.lng}
+Please ACKNOWLEDGE immediately! If unacknowledged within 15s, alert will cascade to next priority contact.`;
+  }
+
+  // Update real action buttons
+  const btnCall = document.getElementById('btnLiveCall');
+  const btnSms = document.getElementById('btnLiveSms');
+  const btnWa = document.getElementById('btnLiveWhatsapp');
+  if (btnCall) {
+    btnCall.href = `tel:${cleanPhone}`;
+    btnCall.innerHTML = `📞 Call ${targetContact.name} Now (${targetContact.phone})`;
+  }
+  if (btnSms) {
+    btnSms.href = `sms:${cleanPhone}?body=${encodeURIComponent(alertMessage)}`;
+    btnSms.innerHTML = `💬 Send SMS to ${targetContact.name}`;
+  }
+  if (btnWa) {
+    const waPhone = cleanPhone.replace(/^\+/, '');
+    btnWa.href = `https://wa.me/${waPhone}?text=${encodeURIComponent(alertMessage)}`;
+    btnWa.innerHTML = `🟢 WhatsApp to ${targetContact.name}`;
+  }
+
+  // Direct Auto-Trigger Call & SMS on emergency trigger
+  if (autoLaunch) {
+    showToast(`🚨 Direct Call & SMS launched to ${targetContact.name} (${targetContact.phone})!`, "error");
+    try {
+      window.open(`sms:${cleanPhone}?body=${encodeURIComponent(alertMessage)}`, '_blank');
+    } catch(e) {}
+    setTimeout(() => {
+      window.location.href = `tel:${cleanPhone}`;
+    }, 450);
   }
 
   updateEscalationVisuals();
   startEscalationTimer();
 
+  // Background API sync if server is running
+  try {
+    fetch('/api/send-alert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sender: `Kumkum (${user ? user.phone : '+91 99586 50203'})`,
+        fromCity: "Sector 15, Faridabad, Haryana",
+        to: cleanPhone,
+        name: targetContact.name,
+        channel: 'SMS/Call/WhatsApp',
+        message: alertMessage
+      })
+    }).catch(() => {});
+  } catch (e) {}
+
   window.appState.addActivity({
     category: "emergency",
-    title: `Emergency Dispatch -> Priority ${stepNumber} Contact`,
-    description: `SMS and automated voice ping sent to ${targetContact.name}. Awaiting acknowledgement.`
+    title: `Emergency Dispatch -> ${targetContact.name} (${targetContact.phone})`,
+    description: `Direct Call, SMS & WhatsApp triggered from Kumkum (+91 99586 50203 - Faridabad).`
   });
   window.appState.saveState();
 }
@@ -529,7 +582,7 @@ function startEscalationTimer() {
 function simulateContactAcknowledged() {
   if (escalationInterval) clearInterval(escalationInterval);
   const stage = window.appState.state.escalation.stage || 1;
-  const contact = window.appState.state.contacts[stage - 1] || { name: "Priya Sharma" };
+  const contact = window.appState.state.contacts[stage - 1] || { name: "Nakul", relation: "Guardian" };
 
   window.appState.state.escalation.status = 'acknowledged';
   window.appState.state.escalation.acknowledgedBy = contact.name;
@@ -544,7 +597,7 @@ function simulateContactAcknowledged() {
   const smsBody = document.getElementById('smsBodyPreview');
   if (smsBody) {
     smsBody.textContent = `[CONFIRMED ACKNOWLEDGEMENT]
-Guardian ${contact.name} (${contact.relation}) responded: "I have acknowledged the alert and am in contact / en route. Location locked."
+Guardian ${contact.name} (${contact.relation || 'Emergency'}) responded: "I have acknowledged the alert and am in contact / en route. Location locked."
 Escalation ladder paused. All contacts updated.`;
   }
 
@@ -564,18 +617,27 @@ function simulateNoResponseEscalate() {
   if (escalationInterval) clearInterval(escalationInterval);
   let stage = window.appState.state.escalation.stage || 1;
   
-  if (stage < 4) {
+  if (stage < 2) {
     stage++;
-    showToast(`⚠️ No response from Contact. Escalating to Priority ${stage}...`, "warning");
+    showToast(`⚠️ No response from Nakul. Escalating to Priority ${stage} (Anshu)...`, "warning");
     triggerEscalationStep(stage);
   } else {
-    showToast("CRITICAL ESCALATION: No contacts responded. Dispatched to Emergency 112!", "error");
-    window.appState.state.escalation.stage = 4;
+    showToast("CRITICAL ESCALATION: Guardians unresponsive. Dispatched to Emergency 112!", "error");
+    window.appState.state.escalation.stage = 3;
     updateEscalationVisuals();
+    const smsRecipient = document.getElementById('smsRecipientTitle');
+    if (smsRecipient) {
+      smsRecipient.textContent = `FINAL ESCALATION: All-India Emergency Helpline 112`;
+    }
     const smsBody = document.getElementById('smsBodyPreview');
     if (smsBody) {
       smsBody.textContent = `[FINAL ESCALATION DISPATCH: NATIONAL 112]
-All primary contacts unresponsive. Encrypted emergency telematics packet routed to India National Emergency Response Support System (ERSS 112) with live GPS trail.`;
+Primary guardians (Nakul & Anshu) unresponsive. Encrypted emergency telematics packet routed to India National Emergency Response Support System (ERSS 112) with live GPS trail.`;
+    }
+    const btnCall = document.getElementById('btnLiveCall');
+    if (btnCall) {
+      btnCall.href = "tel:112";
+      btnCall.innerHTML = "📞 Call 112 National Police Now";
     }
   }
 }
@@ -592,7 +654,23 @@ function resetEscalationDemo() {
   const smsRecipient = document.getElementById('smsRecipientTitle');
   const smsBody = document.getElementById('smsBodyPreview');
   if (smsRecipient) smsRecipient.textContent = "Simulated Dispatch Queue: Idle";
-  if (smsBody) smsBody.textContent = '"SURAKSHA ALERT: Click Step 1 above to simulate an emergency alert dispatch to trusted guardians."';
+  if (smsBody) smsBody.textContent = '"SURAKSHA ALERT: Click Step 1 above to simulate an emergency alert dispatch to Nakul & Anshu."';
+
+  const btnCall = document.getElementById('btnLiveCall');
+  const btnSms = document.getElementById('btnLiveSms');
+  const btnWa = document.getElementById('btnLiveWhatsapp');
+  if (btnCall) {
+    btnCall.href = "tel:+919899828825";
+    btnCall.innerHTML = "📞 Call Nakul Now";
+  }
+  if (btnSms) {
+    btnSms.href = "sms:+919899828825";
+    btnSms.innerHTML = "💬 Send Real SMS";
+  }
+  if (btnWa) {
+    btnWa.href = "https://wa.me/919899828825";
+    btnWa.innerHTML = "🟢 Send WhatsApp SOS";
+  }
 
   updateEscalationVisuals();
   showToast("Escalation demo reset to initial state.", "info");
@@ -602,7 +680,7 @@ function updateEscalationVisuals() {
   const stage = window.appState.state.escalation.stage || 0;
   const isAck = window.appState.state.escalation.status === 'acknowledged';
 
-  for (let i = 0; i <= 4; i++) {
+  for (let i = 0; i <= 3; i++) {
     const node = document.getElementById(`node-${i}`);
     if (!node) continue;
     node.className = 'escalation-node';
@@ -617,7 +695,7 @@ function updateEscalationVisuals() {
   // Update track progress line width
   const track = document.getElementById('trackProgressLine');
   if (track) {
-    const pct = (stage / 4) * 100;
+    const pct = (stage / 3) * 100;
     track.style.width = `${pct}%`;
   }
 }
@@ -671,7 +749,7 @@ function proceedImmediateSosDispatch() {
   window.appState.saveState();
 
   navigate('escalation');
-  triggerEscalationStep(1);
+  triggerEscalationStep(1, true);
 }
 
 /* ==========================================================================
@@ -753,7 +831,7 @@ function triggerSilentSosDemo() {
   });
   window.appState.saveState();
   navigate('escalation');
-  triggerEscalationStep(1);
+  triggerEscalationStep(1, true);
 }
 
 /* ==========================================================================
@@ -764,8 +842,13 @@ function renderContacts() {
   if (!container) return;
 
   const contacts = window.appState.state.contacts;
+  const sys = window.appState.state.system;
+  const alertMsg = encodeURIComponent(`EMERGENCY ALERT: Kumkum (Phone: +91 99586 50203) needs help! Location: https://maps.google.com/?q=${sys.currentLocation.lat},${sys.currentLocation.lng} (${sys.currentLocation.address})`);
 
-  container.innerHTML = contacts.map(c => `
+  container.innerHTML = contacts.map(c => {
+    const cleanPhone = c.phone.replace(/[^0-9+]/g, '');
+    const waPhone = cleanPhone.replace(/^\+/, '');
+    return `
     <div class="contact-card">
       <span class="contact-priority-badge priority-${c.priority}">
         Priority ${c.priority} ${c.priority === 1 ? '• Primary' : ''}
@@ -782,18 +865,32 @@ function renderContacts() {
       </div>
 
       <div style="background: var(--color-light-grey); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.88rem;">
-        <div><strong>Phone:</strong> ${c.phone}</div>
+        <div><strong>Phone:</strong> <a href="tel:${cleanPhone}" style="color:var(--color-coral-red); font-weight:700;">${c.phone}</a></div>
         <div style="font-size: 0.78rem; color: var(--color-deep-plum-subtle); margin-top: 2px;">
-          ${c.priority === 1 ? 'Receives initial emergency SMS & automated call' : `Escalated after ${c.priority * 30}s if earlier guardians don't answer`}
+          ${c.priority === 1 ? 'Receives initial emergency SMS, WhatsApp & call' : `Escalated after ${c.priority * 15}s if earlier guardians don't answer`}
         </div>
       </div>
 
-      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: auto;">
+      <!-- Real Direct Call / SMS / WhatsApp triggers -->
+      <div style="display: flex; gap: 0.45rem; margin-top: 0.35rem; flex-wrap: wrap;">
+        <a href="tel:${cleanPhone}" class="btn btn-primary btn-sm" style="flex: 1; text-decoration: none; padding: 0.4rem 0.5rem;" title="Direct Call">
+          📞 Call
+        </a>
+        <a href="sms:${cleanPhone}?body=${alertMsg}" class="btn btn-secondary btn-sm" style="flex: 1; text-decoration: none; padding: 0.4rem 0.5rem;" title="Direct SMS">
+          💬 SMS
+        </a>
+        <a href="https://wa.me/${waPhone}?text=${alertMsg}" target="_blank" class="btn btn-sm" style="flex: 1.2; text-decoration: none; background: #25D366; color: #fff; padding: 0.4rem 0.5rem;" title="Direct WhatsApp">
+          🟢 WhatsApp
+        </a>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: auto; padding-top: 0.5rem; border-top: 1px solid var(--color-light-grey);">
         <button class="btn btn-outline btn-sm" onclick="editContact('${c.id}')">Edit</button>
         <button class="btn btn-secondary btn-sm" onclick="deleteContact('${c.id}')">Delete</button>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function openAddContactModal() {
@@ -950,6 +1047,41 @@ function judgeTourPrev() {
 function dismissJudgeTour() {
   const bar = document.getElementById('judgeBar');
   bar.style.display = 'none';
+}
+
+/* ==========================================================================
+   PWA & NATIVE APP INSTALLATION
+   ========================================================================== */
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('btnPwaInstall');
+  if (btn) btn.style.display = 'inline-flex';
+});
+
+function triggerPwaInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        showToast("✓ Suraksha Alert installed to your device!", "success");
+      }
+      deferredPrompt = null;
+    });
+  } else {
+    showToast("📱 To install on Phone: In Chrome tap ⋮ -> 'Add to Home screen' or 'Install App'! On Windows, double-click Start-Suraksha-App.bat!", "info");
+  }
+}
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch((err) => {
+      console.log('SW note:', err.message);
+    });
+  });
 }
 
 /* ==========================================================================

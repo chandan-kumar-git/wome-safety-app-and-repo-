@@ -1,0 +1,17 @@
+{
+  "name": "SURAKSHA ALERT – Women's Safety Platform",
+  "short_name": "Suraksha",
+  "description": "Your Safety. Your Strength. Your Freedom. Complete proactive safety readiness and emergency escalation platform.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FFFDFB",
+  "theme_color": "#E84C68",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

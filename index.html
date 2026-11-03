@@ -6,7 +6,13 @@
   <title>SURAKSHA ALERT – Women's Personal Safety Platform</title>
   <meta name="description" content="Your Safety. Your Strength. Your Freedom. Complete proactive safety readiness and emergency escalation platform for women.">
   <link rel="stylesheet" href="css/styles.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23E84C68'><path d='M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z'/></svg>">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#E84C68">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Suraksha Alert">
+  <link rel="icon" href="assets/icon.svg">
 </head>
 <body>
 
@@ -43,8 +49,11 @@
         </ul>
       </nav>
 
-      <!-- Quick Action SOS Badge -->
+      <!-- Quick Action SOS Badge & App Install -->
       <div class="nav-actions">
+        <button class="btn btn-secondary btn-sm" id="btnPwaInstall" onclick="triggerPwaInstall()" style="display:inline-flex;" title="Install on Android or Desktop as App">
+          📲 Install App
+        </button>
         <button class="sos-nav-badge" onclick="triggerSosCountdown()" title="Activate Emergency SOS (Demo Mode)">
           <span class="sos-pulse-dot"></span>
           <span>SOS ALERT</span>
@@ -306,8 +315,8 @@
             <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-success);"></span>
             <span>SYSTEM ACTIVE • GPS CALIBRATED</span>
           </div>
-          <h1 style="font-size: 1.8rem; margin: 0.5rem 0 0.2rem 0;" id="dashWelcomeName">Hello, Aanya Sen</h1>
-          <p id="dashLocationText">Current Location: Indiranagar 100ft Road, Bengaluru • High Precision</p>
+          <h1 style="font-size: 1.8rem; margin: 0.5rem 0 0.2rem 0;" id="dashWelcomeName">Hello, Kumkum</h1>
+          <p id="dashLocationText">Current Location: Sector 15, Faridabad, Haryana • High Precision GPS</p>
         </div>
         <div style="text-align: right;">
           <button class="btn btn-outline btn-sm" onclick="requestBrowserLocation()">
@@ -412,7 +421,7 @@
               <span class="badge badge-purple">JOURNEY STATUS</span>
               <button class="btn btn-outline btn-sm" onclick="navigate('journey')">View Details</button>
             </div>
-            <h3 style="font-size: 1.15rem; margin-bottom: 0.25rem;" id="dashJourneyTitle">Destination: Home (Indiranagar)</h3>
+            <h3 style="font-size: 1.15rem; margin-bottom: 0.25rem;" id="dashJourneyTitle">Destination: Home (Sector 15, Faridabad)</h3>
             <p style="font-size: 0.85rem;" id="dashJourneySubtitle">Automated check-in timer is armed.</p>
 
             <div style="margin: 1.25rem 0;">
@@ -529,20 +538,20 @@
           
           <div class="form-group">
             <label class="form-label">Destination Address / Label</label>
-            <input type="text" class="form-input" id="journeyDestInput" value="Home (Indiranagar, Bangalore)">
+            <input type="text" class="form-input" id="journeyDestInput" value="Home (Sector 15, Faridabad)">
           </div>
 
           <div class="form-group">
             <label class="form-label">Estimated Transit Time</label>
             <select class="form-select" id="journeyDurationSelect">
-              <option value="15">15 Minutes (Short Walk / Cab)</option>
+              <option value="15">15 Minutes (Short Walk / Auto)</option>
               <option value="25" selected>25 Minutes (Standard Commute)</option>
               <option value="45">45 Minutes (Cross-City Transit)</option>
               <option value="60">60 Minutes (Long Distance)</option>
             </select>
           </div>
 
-          <div style="background: var(--color-soft-lavender); padding: 1rem; border-radius: var(--radius-sm); margin: 1.25rem 0;">
+          <div style="background: var(--color-soft-lavender); padding: 1rem; border-radius: var(--radius-sm); margin-1.25rem 0;">
             <div style="font-weight: 700; font-size: 0.88rem; color: var(--color-deep-plum); margin-bottom: 0.35rem;">Check-in Rule</div>
             <p style="font-size: 0.8rem;">
               You will be prompted to tap <strong>"I'm Safe"</strong> halfway and upon arrival. If no check-in is received within 2 minutes of the ETA, the acknowledgement escalation pipeline alerts your Priority 1 contact.
@@ -586,19 +595,19 @@
             <div class="route-step">
               <div class="route-dot start"></div>
               <div style="text-align: left; font-size: 0.85rem;">
-                <strong>Origin:</strong> Indiranagar Metro Station (Departed 02:45 PM)
+                <strong>Origin:</strong> Bata Chowk Metro Station, Faridabad (Departed 02:45 PM)
               </div>
             </div>
             <div class="route-step">
               <div class="route-dot active"></div>
               <div style="text-align: left; font-size: 0.85rem;">
-                <strong>Checkpoint 1:</strong> 100ft Road Junction (Live Check-in)
+                <strong>Checkpoint 1:</strong> Neelam Flyover, Faridabad (Live Check-in)
               </div>
             </div>
             <div class="route-step">
               <div class="route-dot end"></div>
               <div style="text-align: left; font-size: 0.85rem;">
-                <strong>Destination:</strong> Home (Indiranagar)
+                <strong>Destination:</strong> Home (Sector 15, Faridabad)
               </div>
             </div>
           </div>
@@ -638,27 +647,20 @@
           <!-- Node 2: Contact 1 -->
           <div class="escalation-node" id="node-1">
             <div class="node-circle">2</div>
-            <div class="node-title">Priya Sharma</div>
-            <div class="node-subtitle">Priority 1 (Sister)</div>
+            <div class="node-title">Nakul</div>
+            <div class="node-subtitle">Priority 1 (9899828825)</div>
           </div>
 
           <!-- Node 3: Contact 2 -->
           <div class="escalation-node" id="node-2">
             <div class="node-circle">3</div>
-            <div class="node-title">Rajesh Verma</div>
-            <div class="node-subtitle">Priority 2 (Father)</div>
+            <div class="node-title">Anshu</div>
+            <div class="node-subtitle">Priority 2 (8287878272)</div>
           </div>
 
-          <!-- Node 4: Contact 3 -->
+          <!-- Node 4: National 112 -->
           <div class="escalation-node" id="node-3">
-            <div class="node-circle">4</div>
-            <div class="node-title">Ananya Patel</div>
-            <div class="node-subtitle">Priority 3 (Friend)</div>
-          </div>
-
-          <!-- Node 5: National 112 -->
-          <div class="escalation-node" id="node-4">
-            <div class="node-circle">5</div>
+            <div class="node-circle">3</div>
             <div class="node-title">Emergency 112</div>
             <div class="node-subtitle">Final Escalation</div>
           </div>
@@ -701,13 +703,25 @@
               </svg>
             </div>
             <div style="flex: 1;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                 <strong style="font-size: 0.85rem; color: var(--color-coral-red);" id="smsRecipientTitle">Simulated Dispatch Queue: Idle</strong>
                 <span style="font-size: 0.75rem; color: var(--color-deep-plum-subtle);" id="smsTimestamp">Ready</span>
               </div>
               <p style="font-size: 0.85rem; font-family: monospace; color: var(--color-deep-plum);" id="smsBodyPreview">
-                "SURAKSHA ALERT: Test mode. Click 'Step 1' above to preview the automated emergency dispatch packet sent to trusted guardians."
+                "SURAKSHA ALERT: Click 'Step 1' above to dispatch distress alerts to Nakul (+91 9899828825) & Anshu (+91 8287878272)."
               </p>
+              <!-- Live Real Action Buttons for Phone Call & SMS -->
+              <div id="liveDispatchActions" style="display: flex; gap: 0.6rem; margin-top: 0.85rem; flex-wrap: wrap;">
+                <a id="btnLiveCall" href="tel:+919899828825" class="btn btn-primary btn-sm" style="text-decoration:none;">
+                  📞 Call Nakul Now
+                </a>
+                <a id="btnLiveSms" href="sms:+919899828825?body=EMERGENCY%20ALERT:%20Kumkum%20(9958650203)%20needs%20help!%20Location:%20https://maps.google.com/?q=28.4089,77.3178" class="btn btn-secondary btn-sm" style="text-decoration:none;">
+                  💬 Send Real SMS
+                </a>
+                <a id="btnLiveWhatsapp" href="https://wa.me/919899828825?text=EMERGENCY%20ALERT:%20Kumkum%20(9958650203)%20needs%20help!%20Location:%20https://maps.google.com/?q=28.4089,77.3178" target="_blank" class="btn btn-sm" style="background:#25D366; color:#fff; text-decoration:none;">
+                  🟢 Send WhatsApp SOS
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -1015,13 +1029,13 @@
       <span class="badge badge-coral" style="font-size: 0.85rem;">CRITICAL DEMO ALERT</span>
       <h2 style="font-size: 1.75rem; color: var(--color-coral-red); margin-top: 0.5rem;">Emergency SOS Triggered</h2>
       <p style="font-size: 0.9rem; margin-top: 0.25rem;">
-        Distress siren active. Escalating to Priority 1 Contact (Priya Sharma) in:
+        Distress siren active. Escalating to Priority 1 Contact (Nakul • +91 9899828825) in:
       </p>
 
       <div class="sos-countdown-circle" id="sosCountdownNumber">5</div>
 
       <div style="background: var(--color-light-grey); padding: 0.85rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem; text-align: left; font-size: 0.825rem;">
-        <div><strong>GPS Location:</strong> 12.9716° N, 77.5946° E (Bengaluru)</div>
+        <div><strong>GPS Location:</strong> 28.4089° N, 77.3178° E (Sector 15, Faridabad, Haryana)</div>
         <div><strong>Battery:</strong> 84% • Live tracking URL generated</div>
       </div>
 

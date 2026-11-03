@@ -6,38 +6,29 @@
 
 const DEFAULT_STATE = {
   user: {
-    name: "Aanya Sen",
-    phone: "+91 98200 12345",
-    city: "Bengaluru, Karnataka",
-    bloodGroup: "O+",
-    medicalNote: "Mild asthma, carries inhaler",
-    avatar: "AS"
+    name: "Kumkum",
+    phone: "+91 99586 50203",
+    city: "Faridabad, Haryana",
+    bloodGroup: "B+",
+    medicalNote: "Emergency medical contact active",
+    avatar: "K"
   },
   contacts: [
     {
       id: "c-1",
-      name: "Priya Sharma",
-      phone: "+91 98765 43210",
-      relation: "Sister",
+      name: "Nakul",
+      phone: "+91 98998 28825",
+      relation: "Brother / Guardian",
       priority: 1,
       isPrimary: true,
       lastAckTime: null
     },
     {
       id: "c-2",
-      name: "Rajesh Verma",
-      phone: "+91 98111 22334",
-      relation: "Father",
+      name: "Anshu",
+      phone: "+91 82878 78272",
+      relation: "Guardian / Emergency Contact",
       priority: 2,
-      isPrimary: false,
-      lastAckTime: null
-    },
-    {
-      id: "c-3",
-      name: "Ananya Patel",
-      phone: "+91 98450 99887",
-      relation: "Roommate / Colleague",
-      priority: 3,
       isPrimary: false,
       lastAckTime: null
     }
@@ -46,9 +37,9 @@ const DEFAULT_STATE = {
     locationPermission: "granted", // 'prompt' | 'granted' | 'denied'
     gpsActive: true,
     currentLocation: {
-      lat: 12.9716,
-      lng: 77.5946,
-      address: "Indiranagar 100ft Road, Bengaluru",
+      lat: 28.4089,
+      lng: 77.3178,
+      address: "Sector 15, Faridabad, Haryana",
       accuracy: "High (±8m)"
     },
     safetyTimerSetup: true,
@@ -66,7 +57,7 @@ const DEFAULT_STATE = {
   },
   journey: {
     active: false,
-    destination: "Home (Indiranagar)",
+    destination: "Home (Sector 15, Faridabad)",
     estimatedMinutes: 25,
     remainingSeconds: 1500,
     checkInsCompleted: 0,
@@ -87,14 +78,14 @@ const DEFAULT_STATE = {
       time: "Today, 02:45 PM",
       category: "journey",
       title: "Smart Journey Completed",
-      description: "Checked in safely at 'Indiranagar Metro Station'. Journey timer resolved."
+      description: "Checked in safely at 'Bata Chowk Metro Station, Faridabad'. Journey timer resolved."
     },
     {
       id: "act-2",
       time: "Today, 01:15 PM",
       category: "system",
       title: "High-Precision GPS Calibrated",
-      description: "Browser location verified within ±8m accuracy radius."
+      description: "Browser location verified at Faridabad, Haryana within ±8m accuracy."
     },
     {
       id: "act-3",
@@ -108,7 +99,7 @@ const DEFAULT_STATE = {
       time: "Yesterday, 07:10 PM",
       category: "contact",
       title: "Priority 1 Contact Verified",
-      description: "Emergency SMS channel tested with Priya Sharma (Sister)."
+      description: "Emergency SMS & Call channels verified with Nakul (+91 98998 28825)."
     }
   ]
 };
@@ -121,7 +112,7 @@ class AppState {
 
   loadState() {
     try {
-      const saved = localStorage.getItem("suraksha_alert_state");
+      const saved = localStorage.getItem("suraksha_alert_state_v3");
       if (saved) {
         return JSON.parse(saved);
       }
@@ -133,7 +124,7 @@ class AppState {
 
   saveState() {
     try {
-      localStorage.setItem("suraksha_alert_state", JSON.stringify(this.state));
+      localStorage.setItem("suraksha_alert_state_v3", JSON.stringify(this.state));
     } catch (e) {
       console.warn("Could not save to localStorage:", e);
     }
@@ -164,25 +155,25 @@ class AppState {
 
     // 1. Emergency Contacts (Max 30 pts)
     const contactCount = contacts.length;
-    if (contactCount >= 3) {
+    if (contactCount >= 2) {
       score += 30;
       items.push({
         id: "contacts",
-        title: "3 Trusted Contacts Configured",
+        title: `${contactCount} Trusted Contacts Active (Nakul & Anshu)`,
         category: "Contacts",
         points: 30,
         completed: true,
-        desc: "Triple-tier escalation ladder is fully operational."
+        desc: "Escalation ladder is armed with real Call, SMS & WhatsApp channels."
       });
     } else if (contactCount >= 1) {
       score += 15;
       items.push({
         id: "contacts",
-        title: `${contactCount} of 3 Recommended Contacts Added`,
+        title: `${contactCount} Contact Added`,
         category: "Contacts",
         points: 15,
         completed: false,
-        desc: "Add at least 3 contacts to unlock automated multi-tiered escalation."
+        desc: "Add at least 2 contacts (Nakul & Anshu) to unlock multi-tiered escalation."
       });
     } else {
       items.push({
